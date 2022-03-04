@@ -67,8 +67,25 @@ class _ReadExamples4State extends State<ReadExamples4> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+
+              FutureBuilder(
+                  future: _database.child('dailySpecial').once(),
+                  builder: (context,snapshot) {
+                    if (snapshot.hasData) {
+                      final dailySpecial = DailySpecial.fromRTDB(
+                          Map<String, dynamic>.from(
+                              (snapshot.data as DataSnapshot).value));
+                      return Text(dailySpecial.fancyDescription());
+                    } else {
+                      return CircularProgressIndicator();
+                    }
+                  },
+              ),
+
               Text(_displayText),
+
               SizedBox(height: 50,),
+
               StreamBuilder(
                   stream: _database.child('orders').orderByKey().limitToLast(10).onValue,
                   builder: (context,snapshot) {
@@ -78,7 +95,7 @@ class _ReadExamples4State extends State<ReadExamples4> {
                           (snapshot.data! as Event).snapshot.value);
 
                       tilesList.addAll(
-                        myOrders.values.map((value) {
+                        myOrders.values.map((value) { // like forEach in RTDB
                           final nextOrder = Order.fromRTDB(
                               Map<String, dynamic>.from(value));
                           return ListTile(
